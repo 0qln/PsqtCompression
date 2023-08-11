@@ -1,0 +1,1 @@
+function smartDevice(){return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)}if(smartDevice()||window.innerWidth!=null&&window.innerWidth<600){const A=document.getElementsByTagName("body")[0];A.style.marginLeft='3px';A.style.marginRight='4px'}function is_touch_enabled(){return('ontouchstart'in window)||(navigator.maxTouchPoints>0)||(navigator.msMaxTouchPoints>0);}
