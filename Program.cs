@@ -194,48 +194,36 @@ static class Program
     // NOTE:    Absolute EG can be compressed to byte
     public static void Main(string[] args)
     {
-        var data = mg_pawn_table.Select(x => (double)x).ToArray();
+        var data = _pesto.Select(x => (double)x).ToArray();
 
-        double[] forward = DCT4.Forward(data);
+        double[] forward = DCT.Forward(data);
+        double[] runThrough = DCT.Inverse(forward);
 
-        double[] inverse = DCT4.Inverse(forward);
-
-        //PrintArray(data);
-
-        //Console.WriteLine();
-        //PrintArray(forward);
-
-        Console.WriteLine();
-        PrintArray(inverse, data, out double _, out double _);
-
-
-        return;
-        double[] lastDecompressed = new double[data.Length];
+        PrintArray(runThrough, data, out double _, out double _);
 
         bool compression100 = false;
 
-
         for (int compression = 0; compression < 1000 && !compression100; compression += 20)
         {
-            var f_hat = DFT.Forward(data.Select(x => (int)x).ToArray());
-            var f = DFT.Inverse(f_hat.Select(x => x).ToArray());
+            var f_hat = DCT4.Forward(data);
+            var f = DCT4.Inverse(f_hat);
 
-            Complex[] f_hat_compressed = DFT.Compress(f_hat, compression, out int zeros);
-            var f_compressed = DFT.Inverse(f_hat_compressed);
+            var f_hat_compressed = DCT4.Compress(f_hat, compression, out int zeros);
+            var f_compressed = DCT4.Inverse(f_hat_compressed);
 
 
             int[] order = f.Select(x => Array.IndexOf(f, x)).ToArray();
             int[] order_compressed = f_compressed.Select(x => Array.IndexOf(f_compressed, x)).ToArray();
             bool orderPreserverd = true;
             for (int i = 0; i < order.Length; i++)
-                if (order[i] != order_compressed[i]) orderPreserverd = false;
+                if (order[i] != order_compressed[i]) 
+                    orderPreserverd = false;
 
 
             double[] deltas = new double[f.Length];
             for (int i = 0; i < deltas.Length; i++)
-            {
                 deltas[i] = Math.Abs(f_compressed[i] - f[i]);
-            }
+
             var avgDelta = deltas.Sum() / deltas.Length;
             var worstDelta = deltas.Max();
 
@@ -253,7 +241,6 @@ static class Program
 
 
             if ((double)zeros / (double)f_hat_compressed.Length == 1) compression100 = true;
-            lastDecompressed = f_compressed;
         }
 
 

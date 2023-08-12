@@ -31,6 +31,14 @@ public static class DCT4
         return output;
     }
 
+    public static double[] Compress(double[] coefficients, double threshhold, out int zeroCounter)
+    {
+        double[] result = coefficients.Select(x => Math.Abs(x) >= threshhold ? x : 0).ToArray();
+
+        zeroCounter = result.Count(x => x == 0);
+
+        return result;
+    }
 
     public static double[] Inverse(double[] coeffs)
     {
@@ -93,9 +101,11 @@ public static class DCT
 
         for (int k = 0; k < N; ++k)
         {
+            f[k] = 0;
+
             for (int n = 0; n < N; n++)
             {
-                f[k] = f_hat[n] * Math.Cos(Math.PI * (n+ 0.5) * k / N);
+                f[k] += f_hat[n] * Math.Cos(Math.PI * (n+ 0.5) * k / N);
             }
 
             f[k] *= 2.0 / N;
