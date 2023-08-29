@@ -1,48 +1,51 @@
 ﻿
 public static class RleCompression
 {
-    public static byte[] Compress(short[] data)
+    public static double[] Compress(double[] input)
     {
-        var compressedBytes = new List<byte>();
-        int count = 1;
-        short prevValue = data[0];
+        if (input == null || input.Length == 0)
+            throw new ArgumentException("Input array cannot be null or empty.");
 
-        for (int i = 1; i < data.Length; i++)
+        List<double> compressedData = new List<double>();
+
+        int count = 1;
+        for (int i = 1; i < input.Length; i++)
         {
-            if (data[i] == prevValue && count < 255)
+            if (input[i] == input[i - 1])
             {
                 count++;
             }
             else
             {
-                compressedBytes.Add((byte)count);
-                compressedBytes.AddRange(BitConverter.GetBytes(prevValue));
-                prevValue = data[i];
+                compressedData.Add(input[i - 1]);
+                compressedData.Add(count);
                 count = 1;
             }
         }
 
-        compressedBytes.Add((byte)count);
-        compressedBytes.AddRange(BitConverter.GetBytes(prevValue));
-        return compressedBytes.ToArray();
+        // Add the last element and its count
+        compressedData.Add(input[input.Length - 1]);
+        compressedData.Add(count);
+
+        return compressedData.ToArray();
     }
 
-    public static short[] Decompress(byte[] compressedData)
+    public static double[] Decompress(double[] compressedData)
     {
-        var decompressedData = new List<short>();
-        int i = 0;
+        if (compressedData == null || compressedData.Length == 0)
+            throw new ArgumentException("Compressed data array cannot be null or empty.");
 
-        while (i < compressedData.Length)
+        List<double> decompressedData = new List<double>();
+
+        for (int i = 0; i < compressedData.Length; i += 2)
         {
-            int count = compressedData[i];
-            short value = BitConverter.ToInt16(compressedData, i + 1);
+            double value = compressedData[i];
+            int count = (int)compressedData[i + 1];
 
             for (int j = 0; j < count; j++)
             {
                 decompressedData.Add(value);
             }
-
-            i += 3; // Each RLE segment is 3 bytes: 1 byte for count, 2 bytes for value.
         }
 
         return decompressedData.ToArray();

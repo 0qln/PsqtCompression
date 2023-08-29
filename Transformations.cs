@@ -75,7 +75,7 @@ public static class DCT
         double[] f_hat = new double[N];
         double[] f = inputVector;
 
-        for (int k = 0; k < N; k++)
+        Parallel.For(0, N, k =>
         {
             f_hat[k] = 0.5 * f[0];
 
@@ -83,10 +83,33 @@ public static class DCT
             {
                 f_hat[k] += f[n] * Math.Cos(Math.PI * (k + 0.5) * n / N);
             }
-        }
+        });
 
         return f_hat;
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="coefficients"></param>
+    /// <param name="threshhold"></param>
+    /// <param name="zeroCounter"></param>
+    /// <returns></returns>
+    public static double[] Compress(double[] coefficients, double threshhold, out int zeroCounter)
+    {
+        double[] result = coefficients.Select(x => Math.Abs(x) >= threshhold ? x : 0).ToArray();
+
+        zeroCounter = result.Count(x => x == 0);
+
+        return result;
+    }
+    public static double[] Compress(double[] coefficients, double threshhold)
+    {
+        double[] result = coefficients.Select(x => Math.Abs(x) >= threshhold ? x : 0).ToArray();
+
+        return result;
+    }
+
 
     /// <summary>
     /// DCT-II with a factor of 2/N
@@ -99,17 +122,33 @@ public static class DCT
         var f_hat = coefVector;
         var f = new double[N];
 
-        for (int k = 0; k < N; ++k)
+        Parallel.For(0, N, k =>
         {
-            f[k] = 0;
-
             for (int n = 0; n < N; n++)
             {
-                f[k] += f_hat[n] * Math.Cos(Math.PI * (n+ 0.5) * k / N);
+                f[k] += f_hat[n] * Math.Cos(Math.PI * (n + 0.5) * k / N);
             }
 
             f[k] *= 2.0 / N;
-        }
+        });
+
+        return f;
+    }
+    public static double[] Inverse(sbyte[] coefVector)
+    {
+        int N = coefVector.Length;
+        var f_hat = coefVector;
+        var f = new double[N];
+
+        Parallel.For(0, N, k =>
+        {
+            for (int n = 0; n < N; n++)
+            {
+                f[k] += f_hat[n] * Math.Cos(Math.PI * (n + 0.5) * k / N);
+            }
+
+            f[k] *= ( 2.0 / N );
+        });
 
         return f;
     }

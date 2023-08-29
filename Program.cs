@@ -36,7 +36,7 @@ static class Program
                     Console.WriteLine();
 
 
-                Console.Write((data[MapSquareIndexToPsqa(i, white)] + "").PadLeft(6));
+                Console.Write((data[TokenCompression.MapSquareIndexToPsqa(i, white)] + "").PadLeft(6));
             }
         }
     }
@@ -87,7 +87,7 @@ static class Program
                 value = data[white ? index : index ^ 56];
 
             if (data.Length == 32)
-                value = data[MapSquareIndexToPsqa(index, white)];
+                value = data[TokenCompression.MapSquareIndexToPsqa(index, white)];
 
 
                 for (int x2 = 0; x2 < SCALE_FACTOR; x2++)
@@ -130,10 +130,14 @@ static class Program
     static short[] AbsuluteOf(short[] input) => input.Select(e => (short)(e + Math.Abs(input.Min()))).ToArray();
 
 
-    static void PrintArray<T>(T[] array) => Array.ForEach(array, x => Console.WriteLine(x));
+    public static void PrintArray<T>(T[] array)
+    {
+        Console.WriteLine();
+        Array.ForEach(array, x => Console.WriteLine(x));
+        Console.WriteLine();
+    }
 
-
-    static void PrintArray<T>(T[] array, T[] expected, out double avgDelta, out double worstDelta)
+    public static void PrintArray<T>(T[] array, T[] expected, out double avgDelta, out double worstDelta)
     {
         double[] deltas = new double[array.Length];
 
@@ -149,6 +153,20 @@ static class Program
 
         avgDelta = deltas.Sum() / deltas.Length;
         worstDelta = deltas.Max();
+    }
+    public static void PrintArray<T>(T[] array, T[] expected)
+    {
+        double[] deltas = new double[array.Length];
+
+        for (int i = 0; i < array.Length; i++)
+        {
+            deltas[i] = Math.Abs(Convert.ToDouble(array[i]) - Convert.ToDouble(expected[i]));
+
+            Console.WriteLine(
+            $"Value: {array[i]?.ToString()?.PadRight(30)}" +
+            $"Expected: {expected[i]?.ToString()?.PadRight(30)}" +
+            $"Delta: {deltas[i]}");
+        }
     }
 
     static void For(int startValue_inclusive, int endIndex_exclusive, Action<int> predicate) {
@@ -189,61 +207,248 @@ static class Program
     //    }
     //}
 
+    static int CountMaxBits(short value)
+    {
+        int count = 0;
+        while (value > 0)
+        {
+            value >>= 1;
+            count++;
+        }
+        return count;
+    }
 
+
+    static string CopyPasta<T>(T[] values)
+    {
+        string result = string.Empty;
+        string type = typeof(T).Name;
+        result += $"{type}[] {nameof(values)}"; 
+        result += "\n";
+        result += "{";
+        result += "\n";
+        for (int i = 0; i < values.Length - 1; i++)
+        {
+            result += ToString(values[i]);
+            result += ", ";
+            if (i % 8 == 7)
+                result += "\n";
+            if (i % 64 == 63)
+                result += "\n";
+        }
+        result += ToString(values[^1]);
+        result += "\n";
+        result += "};";
+        return result;
+
+        string ToString<T>(T value) => value.ToString().PadLeft(5); 
+    }
+
+    static string CopyPasta<TIn, TOut>(TIn[] values, Func<TIn, TOut> predicate)
+    {
+        string result = string.Empty;
+        string type = typeof(TOut).Name;
+        result += $"{type}[] {nameof(values)}";
+        result += "\n";
+        result += "{";
+        result += "\n";
+        for (int i = 0; i < values.Length - 1; i++)
+        {
+            result += ToString(values[i]);
+            result += ", ";
+            if (i % 8 == 7)
+                result += "\n";
+            if (i % 64 == 63)
+                result += "\n";
+        }
+        result += ToString(values[^1]);
+        result += "\n";
+        result += "};";
+        return result;
+
+        string ToString(TIn value) => predicate(value).ToString().PadLeft(5);
+    }
 
     // NOTE:    Absolute EG can be compressed to byte
     public static void Main(string[] args)
     {
-        var data = _pesto.Select(x => (double)x).ToArray();
+        var dataMG = PsqtData.MidgameTablesNorm;
+        var dataEG = PsqtData.EndgameTablesNorm;
 
-        double[] forward = DCT.Forward(data);
-        double[] runThrough = DCT.Inverse(forward);
+        //bool[] occurances = new bool[range+1];
+        //foreach (var x in aPesto) occurances[x] = true;  
 
-        PrintArray(runThrough, data, out double _, out double _);
+        //Console.WriteLine($"Min MG: {dataMG.Min()}");
+        //Console.WriteLine($"Max MG: {dataMG.Max()}");
+        //Console.WriteLine($"Min EG: {dataEG.Min()}");
+        //Console.WriteLine($"Max EG: {dataEG.Max()}");
 
-        bool compression100 = false;
+        //int maxBitCount = 0;
+        //foreach (short num in dataMG)
+        //{
+        //    int bitCount = 0;
+        //    short temp = num;
 
-        for (int compression = 0; compression < 1000 && !compression100; compression += 20)
+        //    while (temp > 0)
+        //    {
+        //        temp >>= 1;
+        //        bitCount++;
+        //    }
+
+        //    if (bitCount > maxBitCount)
+        //    {
+        //        maxBitCount = bitCount;
+        //    }
+        //}
+        //Console.WriteLine(CountMaxBits(dataMG.Max()));
+        //Console.WriteLine(CountMaxBits(-999));
+        //Console.WriteLine(maxBitCount);
+
+        //for (int i = 0; i < 64; i++)
+        //{
+        //    Console.Write(Helpers.GetPieceEval(1, i, 6));
+        //    Console.Write(", ");
+        //}
+        //Console.WriteLine();
+        //for (int i = 0; i < 64; i++)
+        //{
+        //    Console.Write(PsqtData.EndgameTables[i + 64]);
+        //    Console.Write(", ");
+        //}
+
+
+        Console.WriteLine();
+
+        var table = PsqtData.UShortTables;
+
+        var compressed = Pesto.Compress(table);
+        var decompressed = Pesto.Decompress_SHORT(compressed);
+
+        //Console.WriteLine(CopyPasta(Helpers.NormalizePesto(table)));
+        Console.WriteLine(CopyPasta(compressed));
+        Console.WriteLine(CopyPasta(decompressed));
+        Console.WriteLine(CopyPasta(table));
+
+        for (int i = 0; i < 6; i++)
         {
-            var f_hat = DCT4.Forward(data);
-            var f = DCT4.Inverse(f_hat);
-
-            var f_hat_compressed = DCT4.Compress(f_hat, compression, out int zeros);
-            var f_compressed = DCT4.Inverse(f_hat_compressed);
-
-
-            int[] order = f.Select(x => Array.IndexOf(f, x)).ToArray();
-            int[] order_compressed = f_compressed.Select(x => Array.IndexOf(f_compressed, x)).ToArray();
-            bool orderPreserverd = true;
-            for (int i = 0; i < order.Length; i++)
-                if (order[i] != order_compressed[i]) 
-                    orderPreserverd = false;
-
-
-            double[] deltas = new double[f.Length];
-            for (int i = 0; i < deltas.Length; i++)
-                deltas[i] = Math.Abs(f_compressed[i] - f[i]);
-
-            var avgDelta = deltas.Sum() / deltas.Length;
-            var worstDelta = deltas.Max();
-
-
-            Console.WriteLine("\n");
-            Console.WriteLine($"COMPRESSION:                                {compression}");
-            Console.WriteLine($"COMPRESSION %:                              {(double)zeros / (double)f_hat_compressed.Length}");
-            //Console.WriteLine($"zeros:                                      {zeros}");
-            //Console.WriteLine($"non-zeros:                                  {f_hat_compressed.Length - zeros}");
-            Console.WriteLine($"avg error:                                  {avgDelta}");
-            Console.WriteLine($"worst case error:                           {worstDelta}");
-            Console.WriteLine($"avg error relative to compression:          {avgDelta / zeros}");
-            //Console.WriteLine($"worst case error relative to compression:   {worstDelta / zeros}");
-            Console.WriteLine($"ORDER PRESERVERD:                           {orderPreserverd}");
-
-
-            if ((double)zeros / (double)f_hat_compressed.Length == 1) compression100 = true;
+            Console.WriteLine(Helpers.GetFromCompressed(i, 0, 6));
         }
 
+        //Console.WriteLine(CopyPasta(PsqtData.PiecesNorm, (short x) => (short)(x - 128)));
 
+
+        //Console.WriteLine(CopyPasta(PsqtData.TablesNorm));
+        //Console.WriteLine($"Range: {range}");
+
+        //Console.WriteLine("Numbers not occuring: ");
+        //for (int i = 0; i < occurances.Length; i++)
+        //    if (occurances[i] == false) Console.WriteLine(i);
+
+        //Console.WriteLine("Numbers occuring: ");
+        //for (int i = 0; i < occurances.Length; i++)
+        //    if (occurances[i] == true) Console.WriteLine(i);
+
+        return;
+        
+        //var compressed = Pesto.Compress(data, 0);
+
+        //var decompressed = Pesto.Decompress(compressed);
+
+        //PrintArray(decompressed, data, out double avgError, out double worstCaseError);
+        
+        //Console.WriteLine(compressed.Where(x => x != 0).Count());
+        //Console.WriteLine(decompressed.Length);
+        //Console.WriteLine(avgError);
+        //Console.WriteLine(worstCaseError);
+
+
+        //return;
+
+        //var f_hat = DCT.Forward(data);
+        //var f = DCT.Inverse(f_hat);
+
+        //bool compression100 = false;
+        //double lastCompresion = 0;
+        //double bestCompressionScore = -1;
+        //int bestCompressionThreshhold = -1;
+
+        //for (int threshhold = 0; threshhold < f_hat.Max() + 100 && !compression100; threshhold += 10)
+        //{
+        //    var f_hat_compressed = DCT.Compress(f_hat, threshhold, out int zeros);
+        //    var f_compressed = DCT.Inverse(f_hat_compressed);
+
+
+        //    int[] order = f.Select(x => Array.IndexOf(f, x)).ToArray();
+        //    int[] order_compressed = f_compressed.Select(x => Array.IndexOf(f_compressed, x)).ToArray();
+            
+        //    // wether the order of elements is preserved or not
+        //    bool orderPreserverd = true;
+        //    // the amount of times the order was violated
+        //    // set this to -1, if it is not needed
+        //    // TODO: this doesn't work?? getting weird results
+        //    int orderViolations = -1;
+
+        //    for (int i = 0; i < order.Length; i++)
+        //        if (order[i] != order_compressed[i])
+        //        {
+        //            orderPreserverd = false;
+
+        //            if (orderViolations == -1)
+        //                break;
+        //            else
+        //                orderViolations++;
+        //        }
+
+
+        //    double[] deltas = new double[f.Length];
+        //    for (int i = 0; i < deltas.Length; i++)
+        //        deltas[i] = Math.Abs(f_compressed[i] - f[i]);
+            
+
+        //    // the avarage case error
+        //    var avgDelta = deltas.Sum() / deltas.Length;
+        //    // the worst case error
+        //    var worstDelta = deltas.Max();
+        //    // the ratio from zeros to non zeros in the coefficients
+        //    // high value: lots of compression, low value: few compression
+        //    var compressionResult = (double)zeros / (double)f_hat_compressed.Length;
+        //    // try to evaluate how good the compression amount relative to the loss is
+        //    // high value: good, low value: bad
+        //    var compressionScore = compressionResult / avgDelta;
+
+        //    if (compressionResult != lastCompresion)
+        //    {
+        //        Console.WriteLine("\n");
+        //        Console.WriteLine($"COMPRESSION:                                {threshhold}");
+        //        Console.WriteLine($"COMPRESSION %:                              {compressionResult}");
+        //        Console.WriteLine($"Score:                                      {compressionScore}");
+        //        Console.WriteLine($"zeros:                                      {zeros}");
+        //        //Console.WriteLine($"non-zeros:                                  {f_hat_compressed.Length - zeros}");
+        //        Console.WriteLine($"avg error:                                  {avgDelta}");
+        //        Console.WriteLine($"worst case error:                           {worstDelta}");
+        //        //Console.WriteLine($"avg error relative to compression:          {avgDelta / zeros}");
+        //        //Console.WriteLine($"worst case error relative to compression:   {worstDelta / zeros}");
+        //        Console.WriteLine($"ORDER PRESERVERD:                           {orderPreserverd}");
+        //        if (orderViolations != -1)
+        //        Console.WriteLine($"ORDER VIOLATIONS:                           {orderViolations}");
+        //    }
+
+
+        //    if (compressionResult == 1) compression100 = true;
+        //    lastCompresion = compressionResult;
+
+        //    if (compressionScore > bestCompressionScore
+        //        && threshhold > 200)
+        //    {
+        //        bestCompressionScore = compressionScore;
+        //        bestCompressionThreshhold = threshhold;
+        //    }
+        //}
+
+
+        //Console.WriteLine("\n Best compression: ");
+        //Console.WriteLine($"Threshhold: {bestCompressionThreshhold}");
+        //Console.WriteLine($"Score: {bestCompressionScore}");
 
 
         Console.Read();
@@ -396,18 +601,6 @@ static class Program
         Console.WriteLine("\r\n    };");
     }
 
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <param name="index">[0,63]</param>
-    /// <param name="white"></param>
-    /// <returns>[0,31]</returns>
-    static int MapSquareIndexToPsqa(int index, bool white)
-    {
-        int file = index & 7;
-        //-----------row----------------//  +  //---------file----------//
-        return (index / 8 * 4 ^ (white ? 0 : 0x1C)) + (file < 4 ? file : 7 - file);
-    }
 
 
     static void GeneratePsqa()
@@ -485,6 +678,9 @@ static class Program
 
     #region https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
 
+    /// <summary>
+    /// For DCT, use a compression threshhold of ~200
+    /// </summary>
     static short[] _pesto =
     {
         // pawn mg
