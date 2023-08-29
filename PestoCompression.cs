@@ -52,16 +52,47 @@ namespace PsqtCompression
 
             return cramped;
         }
-
-        public static short[] Decompress_SHORT(ulong[] compressed)
+        public static ulong[] Compress<T>(T[] input)
         {
-            var sbytes = new short[compressed.Length * 4];
+            return TokenCompression.CrampAll(input);
+        }
+
+        public static T[] Decompress<T>(ulong[] compressed)
+        {
+            var dSize = sizeof(ulong) / TokenCompression.Sizeof<T>();
+            var sbytes = new T[compressed.Length * dSize];
+
+            for (int i = 0; i < sbytes.Length; i += dSize)
+                for (int j = 0; j < dSize; j++)
+                    sbytes[i + j] = TokenCompression.Extract<T>(compressed[i / dSize], j);
+
+            return sbytes;
+        }
+
+        public static int[] Decompress_SHORT(ulong[] compressed)
+        {
+            var sbytes = new int[compressed.Length * 4];
 
             for (int i = 0; i < sbytes.Length; i += 4)
             {
                 for (int j = 0; j < 4; j++)
                 {
                     sbytes[i + j] = TokenCompression.ExtractShort(compressed[i / 4], j);
+                }
+            }
+
+            return sbytes;
+        }
+
+        public static int[] Decompress_USHORT(ulong[] compressed)
+        {
+            var sbytes = new int[compressed.Length * 4];
+
+            for (int i = 0; i < sbytes.Length; i += 4)
+            {
+                for (int j = 0; j < 4; j++)
+                {
+                    sbytes[i + j] = TokenCompression.ExtractShort(compressed[i / 4], j) - 81;
                 }
             }
 

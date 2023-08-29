@@ -11,6 +11,21 @@ namespace PsqtCompression
 {
     internal static class Helpers
     {
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="index">[0,63]</param>
+        /// <param name="white"></param>
+        /// <returns>[0,31]</returns>
+        public static int MapSquareIndexToPsqa(int index, bool white)
+        {
+            int file = index & 7;
+            //-----------row----------------//  +  //---------file----------//
+            return (index / 8 * 4 ^ (white ? 0 : 0x1C)) + (file < 4 ? file : 7 - file);
+        }
+
+
         public static void CombineMgEg()
         {
             for (int piece = 0; piece < 10; piece++)
@@ -75,6 +90,14 @@ namespace PsqtCompression
         public static int GetPieceEval_SHORTARRAY(int piece, int square, int mg)
         {
             return (short)(PsqtData.CompressedShortTables[piece * 4 + square / 4 + mg] >> (square % 4 * 16) & 0xFFFFul);
+        }
+        /// <param name="mg">
+        /// 0: mg / 96: eg
+        /// </param>
+        /// <returns></returns>
+        public static int GetPieceEval_USHORTARRAY(int piece, int square, int mg)
+        {
+            return (short)(PsqtData.CompressedShortTables[piece * 4 + square / 4 + mg] >> (square % 4 * 16) & 0xFFFFul) - 81;
         }
     }
 
@@ -504,7 +527,6 @@ namespace PsqtCompression
             18446744073709551542, 18446744073709551605, 18446744073709551598, 2251859944931335, 18446744073709551613, 844540895821832, 18446744073709551600, 18445899691730337806,
             18446744073709551591, 18442521953354842136, 18446744073709551589, 18443366382579875863, 18446744073709551584, 18446744030760206351, 18446744073709551561, 18446744073709551596
         };
-
 
         // UShortTables[i] - ShortTables[i] = 81
         public static readonly short[] ShortTables = new short[2 * 6 * 64]

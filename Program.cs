@@ -319,20 +319,18 @@ static class Program
 
         Console.WriteLine();
 
-        var table = PsqtData.UShortTables;
+        var table = PsqtData.UsTablesNorm;
 
         var compressed = Pesto.Compress(table);
-        var decompressed = Pesto.Decompress_SHORT(compressed);
+        var decompressed = Pesto.Decompress(compressed);
 
-        //Console.WriteLine(CopyPasta(Helpers.NormalizePesto(table)));
-        Console.WriteLine(CopyPasta(compressed));
         Console.WriteLine(CopyPasta(decompressed));
         Console.WriteLine(CopyPasta(table));
 
-        for (int i = 0; i < 6; i++)
-        {
-            Console.WriteLine(Helpers.GetFromCompressed(i, 0, 6));
-        }
+        //for (int i = 0; i < 6; i++)
+        //{
+        //    Console.WriteLine(Helpers.GetFromCompressed(i, 0, 6));
+        //}
 
         //Console.WriteLine(CopyPasta(PsqtData.PiecesNorm, (short x) => (short)(x - 128)));
 
