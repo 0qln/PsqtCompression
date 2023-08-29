@@ -22,7 +22,6 @@ namespace PsqtCompression.Helpers
         }
 
 
-
         public static int CountMaxBits(short value)
         {
             int count = 0;

@@ -1,7 +1,6 @@
 ﻿using MathNet.Numerics;
 using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
-using PsqtCompression;
 using PsqtCompression.CompressionMethods;
 using PsqtCompression.Helpers;
 using System.Diagnostics.CodeAnalysis;
@@ -22,12 +21,16 @@ static class Program
     {
         Console.WriteLine();
 
-        var table = PsqtCompression.Data.MinimalChess.UsTablesNorm;
+        var table = PsqtCompression.Data.MinimalChess.UShortTables;
 
-        var compressed = Psqt.Compress(table);
-        var decompressed = Psqt.Decompress<byte>(compressed);
 
-        Console.WriteLine(Print.CopyPasta(decompressed));
+        var squished = MinimalChess.TransformPesto(table, 0, 255);
+        Console.WriteLine(Print.CopyPasta(squished));
         Console.WriteLine(Print.CopyPasta(table));
+
+        //Console.WriteLine(table.Min());
+        //Console.WriteLine(table.Max());
+        //Console.WriteLine(squished.Min());
+        //Console.WriteLine(squished.Max());
     }
 }
