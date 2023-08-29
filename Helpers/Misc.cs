@@ -22,6 +22,12 @@ namespace PsqtCompression.Helpers
         }
 
 
+        public static float Lerp(float v0, float v1, float t)
+        {
+            return (1 - t) * v0 + t * v1;
+        }
+
+
         public static int CountMaxBits(short value)
         {
             int count = 0;

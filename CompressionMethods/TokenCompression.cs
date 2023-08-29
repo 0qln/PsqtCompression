@@ -36,6 +36,7 @@ namespace PsqtCompression.CompressionMethods
         {
             var dSize = sizeof(ulong) / Sizeof<T>();
             var result = new ulong[input.Length / dSize];
+
             for (int i = 0; i < result.Length; i++)
             {
                 T[] group = new T[dSize];
@@ -44,8 +45,25 @@ namespace PsqtCompression.CompressionMethods
 
                 result[i] = Cramp(group);
             }
+
             return result;
         }
 
+        public static TOut[] ExtractAll<TOut>(ulong[] input)
+            where TOut : notnull
+        {
+            var dSize = sizeof(ulong) / Sizeof<TOut>();
+            var result = new TOut[input.Length * dSize];
+
+            for (int i = 0; i < input.Length; i += dSize)
+            {
+                for (int j = 0; j < dSize; j++)
+                {
+                    result[i + j] = Extract<TOut>(input[i], j);
+                }
+            }
+
+            return result;
+        }
     }
 }

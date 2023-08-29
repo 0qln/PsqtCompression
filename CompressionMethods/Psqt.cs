@@ -1,33 +1,46 @@
-﻿using System;
+﻿using PsqtCompression.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static Program;
+using static PsqtCompression.Helpers.MinimalChess;
 
 namespace PsqtCompression.CompressionMethods
 {
     internal static class Psqt
     {
+        // Delta compression doesn't work, we would need
+        // negatives for some of the deltas.
 
+        
         public static ulong[] Compress<T>(T[] input)
-            where T : notnull
+            where T : struct, IMinMaxValue<T>
         {
-            return TokenCompression.CrampAll(input);
+            var delta = DeltaCompression.Encode(input);
+
+            var squished = TransformPesto(delta, 0, 255);
+
+            var bytes = squished.Select(x => (byte)(dynamic)x).ToArray();
+
+            var cramped = TokenCompression.CrampAll<Byte>(bytes);
+
+            return cramped;
         }
 
 
         public static T[] Decompress<T>(ulong[] compressed)
+            where T : struct, IMinMaxValue<T>
         {
-            var dSize = sizeof(ulong) / TokenCompression.Sizeof<T>();
-            var sbytes = new T[compressed.Length * dSize];
+            var extracted = TokenCompression.ExtractAll<Byte>(compressed);
 
-            for (int i = 0; i < sbytes.Length; i += dSize)
-                for (int j = 0; j < dSize; j++)
-                    sbytes[i + j] = TokenCompression.Extract<T>(compressed[i / dSize], j);
+            var floatingPoints = extracted.Select(x => (double)(dynamic)x).ToArray();
 
-            return sbytes;
+            var deltaDecode = DeltaCompression.Decode<T>(floatingPoints);
+
+            return extracted.Select(x => (T)(dynamic)x).ToArray();
         }
     }
 }

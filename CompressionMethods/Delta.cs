@@ -44,44 +44,30 @@ public record class DeltaCode<T>(T shift, T[] deltas)
 
 public static class DeltaCompression
 {
-    public static double[] Encode(double[] input)
+    public static double[] Encode<T>(T[] input)
     {
         if (input == null || input.Length == 0)
             throw new ArgumentException("Input array cannot be null or empty.");
 
-        double[] encodedData = new double[input.Length];
-        encodedData[0] = input[0];
+        var encodedData = new double[input.Length];
+        encodedData[0] = (double)(dynamic)input[0];
 
         for (int i = 1; i < input.Length; i++)
-            encodedData[i] = input[i] - input[i - 1];
+            encodedData[i] = (double)((dynamic)input[i] - (dynamic)input[i - 1]);
 
         return encodedData;
     }
 
-    public static double[] Decode(double[] encodedData)
+    public static TOut[] Decode<TOut>(double[] encodedData)
     {
         if (encodedData == null || encodedData.Length == 0)
             throw new ArgumentException("Encoded data array cannot be null or empty.");
 
-        double[] decodedData = new double[encodedData.Length];
-        decodedData[0] = encodedData[0];
+        var decodedData = new TOut[encodedData.Length];
+        decodedData[0] = (TOut)(dynamic)encodedData[0];
 
         for (int i = 1; i < encodedData.Length; i++)
-            decodedData[i] = decodedData[i - 1] + encodedData[i];
-
-        return decodedData;
-    }
-
-    public static double[] Decode(sbyte[] encodedData)
-    {
-        if (encodedData == null || encodedData.Length == 0)
-            throw new ArgumentException("Encoded data array cannot be null or empty.");
-
-        double[] decodedData = new double[encodedData.Length];
-        decodedData[0] = encodedData[0];
-
-        for (int i = 1; i < encodedData.Length; i++)
-            decodedData[i] = decodedData[i - 1] + encodedData[i];
+            decodedData[i] = (TOut)((dynamic)decodedData[i - 1] + (dynamic)encodedData[i]);
 
         return decodedData;
     }

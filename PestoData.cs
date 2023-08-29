@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PsqtCompression
+namespace PsqtCompression.Data
 {
     //https://www.chessprogramming.org/PeSTO%27s_Evaluation_Function
     
-    internal class MinimalChess
+    internal class Pest
     {
         /// <summary>
         /// For DCT, use a compression threshhold of ~200

@@ -23,14 +23,9 @@ static class Program
 
         var table = PsqtCompression.Data.MinimalChess.UShortTables;
 
+        var compressed = Psqt.Compress(table);
+        var uncompressed = Psqt.Decompress<byte>(compressed);
 
-        var squished = MinimalChess.TransformPesto(table, 0, 255);
-        Console.WriteLine(Print.CopyPasta(squished));
-        Console.WriteLine(Print.CopyPasta(table));
-
-        //Console.WriteLine(table.Min());
-        //Console.WriteLine(table.Max());
-        //Console.WriteLine(squished.Min());
-        //Console.WriteLine(squished.Max());
+        Console.WriteLine(Print.CopyPasta(uncompressed));
     }
 }
