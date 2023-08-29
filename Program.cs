@@ -36,7 +36,7 @@ static class Program
                     Console.WriteLine();
 
 
-                Console.Write((data[TokenCompression.MapSquareIndexToPsqa(i, white)] + "").PadLeft(6));
+                Console.Write((data[Helpers.MapSquareIndexToPsqa(i, white)] + "").PadLeft(6));
             }
         }
     }
@@ -87,7 +87,7 @@ static class Program
                 value = data[white ? index : index ^ 56];
 
             if (data.Length == 32)
-                value = data[TokenCompression.MapSquareIndexToPsqa(index, white)];
+                value = data[Helpers.MapSquareIndexToPsqa(index, white)];
 
 
                 for (int x2 = 0; x2 < SCALE_FACTOR; x2++)
@@ -275,54 +275,13 @@ static class Program
         var dataMG = PsqtData.MidgameTablesNorm;
         var dataEG = PsqtData.EndgameTablesNorm;
 
-        //bool[] occurances = new bool[range+1];
-        //foreach (var x in aPesto) occurances[x] = true;  
-
-        //Console.WriteLine($"Min MG: {dataMG.Min()}");
-        //Console.WriteLine($"Max MG: {dataMG.Max()}");
-        //Console.WriteLine($"Min EG: {dataEG.Min()}");
-        //Console.WriteLine($"Max EG: {dataEG.Max()}");
-
-        //int maxBitCount = 0;
-        //foreach (short num in dataMG)
-        //{
-        //    int bitCount = 0;
-        //    short temp = num;
-
-        //    while (temp > 0)
-        //    {
-        //        temp >>= 1;
-        //        bitCount++;
-        //    }
-
-        //    if (bitCount > maxBitCount)
-        //    {
-        //        maxBitCount = bitCount;
-        //    }
-        //}
-        //Console.WriteLine(CountMaxBits(dataMG.Max()));
-        //Console.WriteLine(CountMaxBits(-999));
-        //Console.WriteLine(maxBitCount);
-
-        //for (int i = 0; i < 64; i++)
-        //{
-        //    Console.Write(Helpers.GetPieceEval(1, i, 6));
-        //    Console.Write(", ");
-        //}
-        //Console.WriteLine();
-        //for (int i = 0; i < 64; i++)
-        //{
-        //    Console.Write(PsqtData.EndgameTables[i + 64]);
-        //    Console.Write(", ");
-        //}
-
 
         Console.WriteLine();
 
         var table = PsqtData.UsTablesNorm;
 
         var compressed = Pesto.Compress(table);
-        var decompressed = Pesto.Decompress(compressed);
+        var decompressed = Pesto.Decompress<byte>(compressed);
 
         Console.WriteLine(CopyPasta(decompressed));
         Console.WriteLine(CopyPasta(table));

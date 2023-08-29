@@ -26,14 +26,6 @@ namespace PsqtCompression
         }
 
 
-        public static void CombineMgEg()
-        {
-            for (int piece = 0; piece < 10; piece++)
-            {
-
-            }
-        }
-
         public static TIn[] NormalizePesto<TIn>(TIn[] input)
             where TIn : struct, IMinMaxValue<TIn>
         {
@@ -79,7 +71,7 @@ namespace PsqtCompression
         /// </param>
         public static int GetFromCompressed(int piece, int square, int mg)
         {
-            return TokenCompression.ExtractByte(PsqtData.CompressedUsTablesNorm[piece*8 + square/8 + mg*8], square%8)
+            return TokenCompression.Extract<byte>(PsqtData.CompressedUsTablesNorm[piece*8 + square/8 + mg*8], square%8)
                 - PsqtData.NotcompressedUsPiecesNorm[mg + piece];
         }
 

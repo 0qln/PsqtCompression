@@ -9,16 +9,20 @@ namespace PsqtCompression
 {
     internal static class TokenCompression
     {
-        public static T Extract<T>(ulong u64, int index) => (dynamic)(u64 >> (index * Sizeof<T>()) & (~0ul >> Sizeof<T>()));
         public static int Sizeof<T>() => Marshal.SizeOf(default(T)) * 8;
 
+
+        public static T Extract<T>(ulong u64, int index)
+        {
+            return (T)(dynamic)(u64 >> (index * Sizeof<T>()) & (~0ul >> Sizeof<T>()));
+        }
 
         public static ulong Cramp<T>(params T[] data)
         {
             ulong result = 0;
             for (int i = 0; i < data.Length; i++)
             {
-                result |= (dynamic)data[i] << Sizeof<T>() * i;
+                result |= (ulong)(dynamic)data[i] << Sizeof<T>() * i;
             }
             return result;
         }
