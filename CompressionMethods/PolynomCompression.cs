@@ -10,7 +10,7 @@ using OpenQA.Selenium.DevTools.V113.Runtime;
 using System.Reflection.Metadata;
 using System.Globalization;
 
-namespace PsqtCompression
+namespace PsqtCompression.CompressionMethods
 {
     internal static class PolynomCompression
     {
@@ -18,7 +18,7 @@ namespace PsqtCompression
         {
             var result = new List<decimal>();
 
-            for (int i = 0; i < originalLength; i++) 
+            for (int i = 0; i < originalLength; i++)
                 result.Add(ExtractY(polynom, i));
 
             return result.Select(d => (short)d).ToList();
@@ -36,7 +36,7 @@ namespace PsqtCompression
             return result;
         }
 
-        public static string BuildFunction(List<decimal> polynom) 
+        public static string BuildFunction(List<decimal> polynom)
         {
             string result = string.Empty;
 
@@ -45,7 +45,7 @@ namespace PsqtCompression
                 double power = polynom.Count - i - 1;
                 result += $"{polynom.ElementAt(i)} * x ^ {power}";
 
-                if (i != polynom.Count-1)
+                if (i != polynom.Count - 1)
                     result += " + ";
             }
 
@@ -54,7 +54,7 @@ namespace PsqtCompression
 
         public static List<decimal> Compress(short[] data)
         {
-            var driver = new ChromeDriver(new ChromeOptions {  } );
+            var driver = new ChromeDriver(new ChromeOptions { });
             driver.Navigate().GoToUrl(@"https://valdivia.staff.jade-hs.de/interpol.html");
 
             var pointCount = driver.FindElement(By.Id("neq"));
@@ -89,7 +89,7 @@ namespace PsqtCompression
                 if (n.Contains('e'))
                 {
                     string s = n.Replace(',', '.').Replace('e', 'E');
-                    return Decimal.Parse(s, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture);
+                    return decimal.Parse(s, NumberStyles.AllowExponent | NumberStyles.Float, CultureInfo.InvariantCulture);
                 }
 
                 return Convert.ToDecimal(n);
@@ -111,14 +111,14 @@ namespace PsqtCompression
             {
                 char sign = polynom[currIndex];
 
-                if (sign != '-' && 
+                if (sign != '-' &&
                     sign != '+' &&
                     sign != '=') currIndex++;
 
                 else
                 {
                     string number = "";
-                                        
+
                     while (currIndex < polynom.Length
                         && polynom[currIndex] != 'x')
                     {

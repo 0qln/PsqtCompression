@@ -1,99 +1,12 @@
-﻿using OpenQA.Selenium.DevTools.V113.DOM;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Numerics;
-using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PsqtCompression
+namespace PsqtCompression.Data
 {
-    internal static class Helpers
-    {
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="index">[0,63]</param>
-        /// <param name="white"></param>
-        /// <returns>[0,31]</returns>
-        public static int MapSquareIndexToPsqa(int index, bool white)
-        {
-            int file = index & 7;
-            //-----------row----------------//  +  //---------file----------//
-            return (index / 8 * 4 ^ (white ? 0 : 0x1C)) + (file < 4 ? file : 7 - file);
-        }
-
-
-        public static TIn[] NormalizePesto<TIn>(TIn[] input)
-            where TIn : struct, IMinMaxValue<TIn>
-        {
-            var result = new TIn[input.Length];
-
-            var min = input.Min();
-
-            Console.WriteLine(min);
-
-            if ((dynamic)min >= 0) return input;
-
-            // Iterate pieces
-            for (int i = 0; i < input.Length; i++)
-            {
-                // Initialize result 
-                result[i] = (TIn)(input[i] - (dynamic)min);
-            }
-
-            return result;
-        }
-
-        public static int GetPieceEval(int piece, int square, bool mg)
-        {
-            sbyte[] table = mg ? PsqtData.MidgameTablesNorm : PsqtData.EndgameTablesNorm;
-            short[] bonus = mg ? PsqtData.MidgamePiecesNorm : PsqtData.EndgamePiecesNorm;
-            return table[piece * 64 + square] - bonus[piece];
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="piece"></param>
-        /// <param name="square"></param>
-        /// <param name="mg">0 if mg, 6 if eg</param>
-        /// <returns></returns>
-        public static int GetPieceEval(int piece, int square, int mg)
-        {
-            return PsqtData.TablesNorm[piece * 64 + square + mg * 64] - PsqtData.PiecesNorm[piece + mg];
-        }
-
-        /// <param name="mg">
-        /// 0: mg / 6: eg
-        /// </param>
-        public static int GetFromCompressed(int piece, int square, int mg)
-        {
-            return TokenCompression.Extract<byte>(PsqtData.CompressedUsTablesNorm[piece*8 + square/8 + mg*8], square%8)
-                - PsqtData.NotcompressedUsPiecesNorm[mg + piece];
-        }
-
-        /// <param name="mg">
-        /// 0: mg / 96: eg
-        /// </param>
-        /// <returns></returns>
-        public static int GetPieceEval_SHORTARRAY(int piece, int square, int mg)
-        {
-            return (short)(PsqtData.CompressedShortTables[piece * 4 + square / 4 + mg] >> (square % 4 * 16) & 0xFFFFul);
-        }
-        /// <param name="mg">
-        /// 0: mg / 96: eg
-        /// </param>
-        /// <returns></returns>
-        public static int GetPieceEval_USHORTARRAY(int piece, int square, int mg)
-        {
-            return (short)(PsqtData.CompressedShortTables[piece * 4 + square / 4 + mg] >> (square % 4 * 16) & 0xFFFFul) - 81;
-        }
-    }
-
-    internal static class PsqtData
+    internal static class MinimalChess
     {
         public const short Midgame = 5255;
         public const short Endgame = 435;
@@ -172,7 +85,7 @@ namespace PsqtCompression
             100
         };
         public static readonly sbyte[] EndgameTablesNorm = new sbyte[6 * 64]
-        { 
+        {
             -58, -58, -58, -58, -58, -58, -58, -58,
             119, 112, 94, 71, 82, 75, 106, 127,
             32, 39, 24, 10, -3, -8, 22, 23,
@@ -354,7 +267,7 @@ namespace PsqtCompression
 
         public static readonly short[] UsPiecesNorm = new short[2 * 6]
         {
-             -215,  -429,  -393,  -547,  -979,   -71,  
+             -215,  -429,  -393,  -547,  -979,   -71,
              -286,  -302,  -309,  -511,  -984,   -28
         };
         public static readonly byte[] UsTablesNorm = new byte[2 * 6 * 64]

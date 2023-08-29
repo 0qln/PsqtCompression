@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PsqtCompression
+namespace PsqtCompression.CompressionMethods
 {
     internal static class TokenCompression
     {
@@ -14,11 +14,14 @@ namespace PsqtCompression
 
         public static T Extract<T>(ulong u64, int index)
         {
-            return (T)(dynamic)(u64 >> (index * Sizeof<T>()) & (~0ul >> Sizeof<T>()));
+            return (T)(dynamic)(u64 >> index * Sizeof<T>() & ~0ul >> Sizeof<T>());
         }
 
         public static ulong Cramp<T>(params T[] data)
+            where T : notnull
         {
+            ArgumentNullException.ThrowIfNull(data);
+
             ulong result = 0;
             for (int i = 0; i < data.Length; i++)
             {
@@ -29,6 +32,7 @@ namespace PsqtCompression
 
 
         public static ulong[] CrampAll<T>(T[] input)
+            where T : notnull
         {
             var dSize = sizeof(ulong) / Sizeof<T>();
             var result = new ulong[input.Length / dSize];

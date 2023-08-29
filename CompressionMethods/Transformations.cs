@@ -8,7 +8,7 @@ using MathNet.Numerics.LinearAlgebra.Complex;
 using System.ComponentModel.DataAnnotations;
 using System.Numerics;
 
-namespace PsqtCompression;
+namespace PsqtCompression.CompressionMethods;
 
 
 public static class DCT4
@@ -24,7 +24,7 @@ public static class DCT4
 
             for (int n = 0; n < N; n++)
             {
-                output[k] += inputs[n] * Math.Cos(Math.PI / N * (n+0.5) * (k+0.5));
+                output[k] += inputs[n] * Math.Cos(Math.PI / N * (n + 0.5) * (k + 0.5));
             }
         }
 
@@ -147,7 +147,7 @@ public static class DCT
                 f[k] += f_hat[n] * Math.Cos(Math.PI * (n + 0.5) * k / N);
             }
 
-            f[k] *= ( 2.0 / N );
+            f[k] *= 2.0 / N;
         });
 
         return f;
@@ -159,11 +159,11 @@ public static class DCT
 public static class DFT
 {
 
-    private static Complex Omega(int k, int n, int N) => ComplexExtensions.Exp(-2 * Constants.Pi * Complex.ImaginaryOne * k * n / N);
+    private static Complex Omega(int k, int n, int N) => (-2 * Constants.Pi * Complex.ImaginaryOne * k * n / N).Exp();
 
     public static Complex[] Forward(int[] inputVector)
     {
-        int N = inputVector.Length;            
+        int N = inputVector.Length;
         Complex[] f_hat = new Complex[N];
         Complex[] f = inputVector.Select(x => new Complex(x, 0)).ToArray();
 
@@ -191,7 +191,7 @@ public static class DFT
         return result;
     }
 
-    private static Complex InverseOmega(int k, int n, int N) => ComplexExtensions.Exp(2 * Constants.Pi * Complex.ImaginaryOne * k * n / N);
+    private static Complex InverseOmega(int k, int n, int N) => (2 * Constants.Pi * Complex.ImaginaryOne * k * n / N).Exp();
 
     public static double[] Inverse(Complex[] coefficients)
     {

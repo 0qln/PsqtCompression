@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace PsqtCompression
+namespace PsqtCompression.CompressionMethods
 {
     internal class Huffman
     {

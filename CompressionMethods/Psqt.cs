@@ -6,12 +6,13 @@ using System.Text;
 using System.Threading.Tasks;
 using static Program;
 
-namespace PsqtCompression
+namespace PsqtCompression.CompressionMethods
 {
-    public static class Pesto
+    internal static class Psqt
     {
 
         public static ulong[] Compress<T>(T[] input)
+            where T : notnull
         {
             return TokenCompression.CrampAll(input);
         }
