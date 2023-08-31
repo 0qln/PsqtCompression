@@ -21,16 +21,23 @@ static class Program
     {
         var table = PsqtCompression.Data.MinimalChess.UShortTables;
 
-        for (uint i = 0; i < 6; i++)
+        // TODO:
+        // negatives DO work ???
+
+        sbyte pos = 10;
+        sbyte neg = -10;
+
+        Test(pos);
+        Test(neg);
+
+        void Test<T>(T num)
         {
-            var compressed = Psqt.Compress(table, i, out int origBitSize);
-            var decompressed = Psqt.Decompress(compressed, origBitSize);
+            Console.WriteLine(num);
 
-            Console.WriteLine(Print.CopyPasta(compressed));
-            Console.WriteLine(Print.CopyPasta(decompressed));
-            Console.WriteLine(compressed.Length);
+            ulong compressedNum = TokenCompression.Cramp(num);
+            var uncompressdNum = TokenCompression.Extract<T>(compressedNum, 0);
+
+            Console.WriteLine(uncompressdNum);
         }
-
-
     }
 }
