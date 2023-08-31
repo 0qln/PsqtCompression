@@ -11,48 +11,77 @@ namespace PsqtCompression.Helpers
 {
     internal static class MinimalChess
     {
-        public static TIn[] NormalizePesto<TIn>(TIn[] input)
+        public static ulong[] NormalizePesto<TIn>(TIn[] input)
             where TIn : struct, IMinMaxValue<TIn>
         {
-            var result = new TIn[input.Length];
+            var result = new ulong[input.Length];
 
             var min = input.Min();
 
-            if ((dynamic)min >= 0) return input;
+            // return immediatly if there are no negative values
+            // in the input vector.
+            if ((dynamic)min >= 0) 
+                return input.Select(x => (ulong)(dynamic)x).ToArray();
 
             // Iterate pieces
             for (int i = 0; i < input.Length; i++)            
                 // Initialize result 
-                result[i] = (TIn)(input[i] - (dynamic)min);
+                result[i] = (ulong)(input[i] - (dynamic)min);
             
 
             return result;
         }
 
-        public static T Project<T>(T x, dynamic min, dynamic max, dynamic newMin, dynamic newMax)
+        public static double Project<T>(T x, dynamic min, dynamic max, dynamic newMin, dynamic newMax)
             where T : struct, IMinMaxValue<T>
         {
             double xDo = (double)(dynamic)x;
             var fDy = (((double)newMax - (double)newMin) * (xDo - min) / (max - min) + (double)newMin);
-            return (T)fDy;
+            return fDy;
+        }
+        public static TOut Project<TIn, TOut>(TIn x, dynamic min, dynamic max, dynamic newMin, dynamic newMax)
+            where TIn : struct, IMinMaxValue<TIn>
+        {
+            double xDo = (double)(dynamic)x;
+            var fDy = (((double)newMax - (double)newMin) * (xDo - min) / (max - min) + (double)newMin);
+            return (TOut)(dynamic)fDy;
         }
 
-        public static TIn[] TransformPesto<TIn>(TIn[] input, dynamic newMin, dynamic newMax)
+        public static double[] TransformPesto<TIn>(TIn[] input, dynamic newMin, dynamic newMax)
             where TIn : struct, IMinMaxValue<TIn>
         {
             double max = (dynamic)input.Max();
             double min = (dynamic)input.Min();
 
-            var result = new TIn[input.Length];
+            var result = new double[input.Length];
 
-            if (newMin < TIn.MinValue) throw new ArgumentException();
-            if (newMax > TIn.MaxValue) throw new ArgumentException();
+            if (newMin < double.MinValue) throw new ArgumentException();
+            if (newMax > double.MaxValue) throw new ArgumentException();
 
             // Iterate pieces
             for (int i = 0; i < input.Length; i++)            
                 // Initialize result 
                 result[i] = Project(input[i], min, max, newMin, newMax);
             
+
+            return result;
+        }
+        public static TOut[] TransformPesto<TIn, TOut>(TIn[] input, dynamic newMin, dynamic newMax)
+            where TIn : struct, IMinMaxValue<TIn>
+            where TOut : struct, IMinMaxValue<TOut>
+        {
+            double max = (dynamic)input.Max();
+            double min = (dynamic)input.Min();
+
+            var result = new TOut[input.Length];
+
+            if (newMin < TOut.MinValue) throw new ArgumentException();
+            if (newMax > TOut.MaxValue) throw new ArgumentException();
+
+            // Iterate pieces
+            for (int i = 0; i < input.Length; i++)
+                // Initialize result 
+                result[i] = Project<TIn, TOut>(input[i], min, max, newMin, newMax);
 
             return result;
         }

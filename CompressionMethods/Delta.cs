@@ -57,6 +57,19 @@ public static class DeltaCompression
 
         return encodedData;
     }
+    public static TOut[] Encode<TIn, TOut>(TIn[] input)
+    {
+        if (input == null || input.Length == 0)
+            throw new ArgumentException("Input array cannot be null or empty.");
+
+        var encodedData = new TOut[input.Length];
+        encodedData[0] = (TOut)(dynamic)input[0];
+
+        for (int i = 1; i < input.Length; i++)
+            encodedData[i] = (TOut)((dynamic)input[i] - (dynamic)input[i - 1]);
+
+        return encodedData;
+    }
 
     public static TOut[] Decode<TOut>(double[] encodedData)
     {

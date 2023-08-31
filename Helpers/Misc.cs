@@ -8,6 +8,8 @@ namespace PsqtCompression.Helpers
 {
     internal static class Misc
     {
+        public static void Noop() { }
+
         /// <summary>
         /// 
         /// </summary>
@@ -26,6 +28,10 @@ namespace PsqtCompression.Helpers
         {
             return (1 - t) * v0 + t * v1;
         }
+
+
+        // input number should be positive
+        public static int NumBitsUsed<T>(T input) => 1 + (int)Math.Log2(Math.Floor((double)(dynamic)input));
 
 
         public static int CountMaxBits(short value)
@@ -52,7 +58,17 @@ namespace PsqtCompression.Helpers
 
         public static string ToBin(this short num)
         {
-            return Convert.ToString(num, 10).PadLeft(4, '0').ToUpper();
+            return Convert.ToString(num, 2).PadLeft(sizeof(short), '0').ToUpper();
+        }
+
+        public static string ToBin(this ushort num)
+        {
+            return Convert.ToString(num, 2).PadLeft(sizeof(ushort), '0').ToUpper();
+        }
+
+        public static string ToBin(this long num)
+        {
+            return Convert.ToString(num, 2).PadLeft(sizeof(long), '0').ToUpper();
         }
     }
 }

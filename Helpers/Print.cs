@@ -51,7 +51,6 @@ namespace PsqtCompression.Helpers
             for (int i = 0; i < values.Length - 1; i++)
             {
                 result += ToString(values[i]);
-                result += ", ";
                 if (i % 8 == 7)
                     result += "\n";
                 if (i % 64 == 63)

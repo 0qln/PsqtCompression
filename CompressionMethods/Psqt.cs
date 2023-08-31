@@ -6,7 +6,6 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using static Program;
-using static PsqtCompression.Helpers.MinimalChess;
 
 namespace PsqtCompression.CompressionMethods
 {
@@ -16,17 +15,43 @@ namespace PsqtCompression.CompressionMethods
         // negatives for some of the deltas.
 
         
-        public static ulong[] Compress<T>(T[] input)
+        public static ulong[] Compress<T>(T[] input, uint compressionRate, out int origBitSize)
             where T : struct, IMinMaxValue<T>
         {
-            var delta = DeltaCompression.Encode(input);
+            // __Constants__ 
+            // Determine the max used number of bits
+            int numBits = Misc.NumBitsUsed(input.Max());
+            int highestNumberUsed = (int)Math.Pow(2, numBits);
+            // We cannot have negative numbers
+            var min = 0;
+            // save `compressionRate` number of bits per entry,
+            // shouldn't be too lossy
+            var max = highestNumberUsed >> (int)compressionRate;
 
-            var squished = TransformPesto(delta, 0, 255);
 
-            var bytes = squished.Select(x => (byte)(dynamic)x).ToArray();
+            // __Push all values out of the negative space__
+            // our cramping method cannot handle negative values,
+            var normalized = MinimalChess.NormalizePesto(input);
 
-            var cramped = TokenCompression.CrampAll<Byte>(bytes);
 
+            // __Project values into target range__
+            // this is where the compression happens
+            var squished = MinimalChess.TransformPesto(normalized, min, max);
+
+
+            // __Parse values into target format__
+            // the new format has to be big enough to hold max and min
+            // it also cannot be of floating point representation
+            var nums = squished.Select(x => (ulong)(dynamic)Math.Round(x)).ToArray();
+
+
+            // __Token reduction__
+            // Cramp small numbers into one big number
+            var cramped = TokenCompression.CrampAll(nums, numBits);
+
+
+            // __Return compressed array and helper values__
+            origBitSize = numBits;
             return cramped;
         }
 
@@ -34,13 +59,19 @@ namespace PsqtCompression.CompressionMethods
         public static T[] Decompress<T>(ulong[] compressed)
             where T : struct, IMinMaxValue<T>
         {
-            var extracted = TokenCompression.ExtractAll<Byte>(compressed);
-
-            var floatingPoints = extracted.Select(x => (double)(dynamic)x).ToArray();
-
-            var deltaDecode = DeltaCompression.Decode<T>(floatingPoints);
+            var extracted = TokenCompression.ExtractAll<T>(compressed);
 
             return extracted.Select(x => (T)(dynamic)x).ToArray();
+        }
+
+        public static ulong[] Decompress(ulong[] compressed, int origBitSize)
+        {
+            // __Extraction__
+            // extract the number out of the cramped ulongs
+            var extracted = TokenCompression.ExtractAll<ulong>(compressed, origBitSize);
+
+            // __Return the decompressed array__
+            return extracted;
         }
     }
 }
