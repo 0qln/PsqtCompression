@@ -47,6 +47,7 @@ namespace PsqtCompression.CompressionMethods
 
             // __Token reduction__
             // Cramp small numbers into one big number
+            numBits = Misc.NumBitsUsed(nums.Max());
             var cramped = TokenCompression.CrampAll(nums, numBits);
 
 
