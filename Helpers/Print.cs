@@ -13,11 +13,13 @@ namespace PsqtCompression.Helpers
 {
     internal class Print
     {
+        private static int _printedCount;
+
         public static string CopyPasta<T>(T[] values)
         {
             string result = string.Empty;
             string type = typeof(T).Name;
-            result += $"{type}[] {nameof(values)}";
+            result += $"{type}[] {$"Values{_printedCount++}"}";
             result += "\n";
             result += "{";
             result += "\n";
@@ -44,7 +46,7 @@ namespace PsqtCompression.Helpers
         {
             string result = string.Empty;
             string type = typeof(TOut).Name;
-            result += $"{type}[] {nameof(values)}";
+            result += $"{type}[] {$"Values{_printedCount++}"}";
             result += "\n";
             result += "{";
             result += "\n";
@@ -65,6 +67,14 @@ namespace PsqtCompression.Helpers
         }
 
 
+
+        public static void Analyze<T>(T[] input)
+        {
+            Console.WriteLine(Print.CopyPasta(input));
+            Console.WriteLine($"Size: {input.Length}");
+            Console.WriteLine($"Min: {input.Min()}");
+            Console.WriteLine($"Max: {input.Max()}");
+        }
 
 
         public static void PrintArray<T>(T[] array)

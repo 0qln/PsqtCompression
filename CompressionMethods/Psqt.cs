@@ -56,6 +56,20 @@ namespace PsqtCompression.CompressionMethods
             return cramped;
         }
 
+        public static ulong[] Compress<T>(T[] input)
+            where T : struct, IMinMaxValue<T>
+        {
+            var table = input;
+
+            var norm = MinimalChess.NormalizePesto(table);
+
+            var squished = MinimalChess.TransformPesto<ulong, Byte>(norm, 0, 255);
+
+            var cramped = TokenCompression.CrampAll(squished);
+
+            return cramped;
+        }
+
 
         public static T[] Decompress<T>(ulong[] compressed)
             where T : struct, IMinMaxValue<T>

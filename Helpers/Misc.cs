@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,6 +44,22 @@ namespace PsqtCompression.Helpers
                 count++;
             }
             return count;
+        }
+
+
+        public static long[] Delta<T1, T2>(T1[] input1, T2[] input2)
+        {
+            Debug.Assert(input1.Length == input2.Length);
+
+            var size = input1.Length;
+            var result = new long[size];
+
+            for (int i = 0; i < size; i++)
+            {
+                result[i] = (dynamic)input1[i] - (dynamic)input2[i];
+            }
+
+            return result;
         }
 
 

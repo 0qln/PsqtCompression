@@ -19,25 +19,15 @@ static class Program
 
     public static void Main_(string[] args)
     {
-        var table = PsqtCompression.Data.MinimalChess.UShortTables;
+        var pesto = PsqtCompression.Data.Pesto.ShortTables;
+        var minim = PsqtCompression.Data.MinimalChess.ShortTables;
 
-        // TODO:
-        // negatives DO work ???
+        var c1 = Psqt.Compress(pesto);
+        var c2 = Psqt.Compress(minim);
 
-        sbyte pos = 10;
-        sbyte neg = -10;
+        var nc1 = Psqt.Decompress<byte>(c1);
+        var nc2 = Psqt.Decompress<byte>(c2);
 
-        Test(pos);
-        Test(neg);
-
-        void Test<T>(T num)
-        {
-            Console.WriteLine(num);
-
-            ulong compressedNum = TokenCompression.Cramp(num);
-            var uncompressdNum = TokenCompression.Extract<T>(compressedNum, 0);
-
-            Console.WriteLine(uncompressdNum);
-        }
+        Console.WriteLine(Print.CopyPasta(Misc.Delta(nc1, nc2)));
     }
 }

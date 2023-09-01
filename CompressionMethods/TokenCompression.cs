@@ -14,13 +14,34 @@ namespace PsqtCompression.CompressionMethods
         public static int Sizeof<T>() => Marshal.SizeOf(default(T)) * 8;
 
 
-        public static T Extract<T>(ulong u64, int index)
+        public static TOut Extract<TOut>(ulong u64, int index)
         {
-            return (T)(dynamic)(u64 >> index * Sizeof<T>());
+            return (TOut)(dynamic)(u64 >> index * Sizeof<TOut>());
         }
-        public static T Extract<T>(ulong u64, int index, int sizeofT)
+        public static TOut Extract<TOut>(ulong u64, int index, int sizeofT)
         {
-            return (T)(dynamic)((u64 >> index * sizeofT) & ~(~0ul << sizeofT));
+            // Token efficient
+            return (TOut)(dynamic)((u64 >> index * sizeofT) & ~(~0ul << sizeofT));
+
+
+            // Index has to be inverted here
+            // because the u64 might not be filled with a perfect fit,
+            // we have to shift by some value x to the right
+            // TODO
+            ///return (TOut)(dynamic)((u64 << 64 - index * sizeofT - sizeofT) >>> 64 - index * sizeofT);
+
+
+            // Probably faster, haven't benchmarked it
+            ///return (TOut)(dynamic)((u64 >> (index * sizeofT)) & ((1ul << sizeofT) - 1));
+
+
+            // Token efficient for a known `TOut`
+
+            // example: `TOut` := byte
+            ///return (byte)((u64 >> (index * sizeofT)) & 0xFFul);
+
+            // example: `TOut` := short
+            ///return (short)((u64 >> (index * sizeofT)) & 0xFFFFul);
         }
 
         public static ulong Cramp<T>(params T[] data)
