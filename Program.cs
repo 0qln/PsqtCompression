@@ -22,12 +22,9 @@ static class Program
         var pesto = PsqtCompression.Data.Pesto.ShortTables;
         var minim = PsqtCompression.Data.MinimalChess.ShortTables;
 
-        var c1 = Psqt.Compress(pesto);
-        var c2 = Psqt.Compress(minim);
-
-        var nc1 = Psqt.Decompress<byte>(c1);
-        var nc2 = Psqt.Decompress<byte>(c2);
-
-        Console.WriteLine(Print.CopyPasta(Misc.Delta(nc1, nc2)));
+        var compressed = Psqt.Compress(pesto, 4, out int origBitSize);
+        var decompressed = Psqt.Decompress(compressed, origBitSize);
+        Print.Analyze(compressed);
+        Print.Analyze(decompressed);
     }
 }

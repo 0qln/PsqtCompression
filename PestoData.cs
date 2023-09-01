@@ -18,7 +18,7 @@ namespace PsqtCompression.Data
             94, 281, 297, 512, 936, 0
         };
 
-        public static short[] ShortTables =
+        public static short[] ShortTables = new short[2 * 6 * 64]
         {
                82,    82,    82,    82,    82,    82,    82,    82,
               180,   216,   143,   177,   150,   208,   116,    71,

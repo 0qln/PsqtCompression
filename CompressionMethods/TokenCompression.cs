@@ -79,21 +79,37 @@ namespace PsqtCompression.CompressionMethods
         public static ulong[] CrampAll<T>(T[] input, int sizeOfT)
             where T : notnull
         {
-            var dSize = Sizeof<ulong>() / sizeOfT;
-            var result = new ulong[input.Length / dSize];
+            int dSize = Sizeof<ulong>() / sizeOfT, 
+                i = 0, j = 0, inputNumsUsed = 0;
+            var result = new ulong[input.Length / dSize + 1];
+            T[] group;
 
             Console.WriteLine(dSize);
 
-            for (int i = 0; i < result.Length; i++)
+            for (i = 0; i < result.Length - 1; i++)
             {
-                var group = new T[dSize];
-                for (int j = 0; j < dSize; j++)
+                group = new T[dSize];
+                for (j = 0; j < dSize; j++)
                 {
                     group[j] = input[i * dSize + j];
+
+                    inputNumsUsed++;
                 }
                 result[i] = Cramp(group, sizeOfT);
             }
 
+            // the last few indecis of `input` are skipped  in the
+            // main loop because the do fill up a `ulong` completely.
+            // we include them here
+            i = result.Length - 1;
+            group = new T[input.Length - inputNumsUsed];
+            for (j = 0; j < group.Length; j++)
+            {
+                group[j] = input[i * dSize + j];
+            }
+            result[i] = Cramp(group, sizeOfT);
+            
+            
             return result;
         }
         public static TOut[] ExtractAll<TOut>(ulong[] input, int sizeOfTOut)
