@@ -18,29 +18,37 @@ namespace PsqtCompression.CompressionMethods
         public static ulong[] Compress<T>(T[] input, uint compressionRate, out int origBitSize)
             where T : struct, IMinMaxValue<T>
         {
+            // `compressionRate` := number_of_bits_saved_per_number
+
+            // __Normalize__
+            // Push all values out of the negative space
+            // Our cramping method cannot handle negative values,
+            var normalized = MinimalChess.NormalizePesto(input);
+            
+            
             // __Constants__ 
             // Determine the max used number of bits
-            int numBits = Misc.NumBitsUsed(input.Max());
-            int highestNumberUsed = (int)Math.Pow(2, numBits);
-            // We cannot have negative numbers
+            int numBits = Misc.NumBitsUsed(normalized.Max());
+            
+            // Determine the max possible number reachable
+            // with the number of bits
+            int highestNumberUsed = (int)Math.Pow(2, numBits) - 1;
+
+            // We cannot yet have negative numbers, not compatible
+            // with the token compression method used
             var min = 0;
+            
             // save `compressionRate` number of bits per entry,
             // shouldn't be too lossy
             var max = highestNumberUsed >> (int)compressionRate;
 
 
-            // __Push all values out of the negative space__
-            // our cramping method cannot handle negative values,
-            var normalized = MinimalChess.NormalizePesto(input);
-
-
             // __Project values into target range__
-            // this is where the compression happens
             var squished = MinimalChess.TransformPesto(normalized, min, max);
 
 
             // __Parse values into target format__
-            // the new format has to be big enough to hold max and min
+            // The new format has to be big enough to hold max and min
             // it also cannot be of floating point representation
             var nums = squished.Select(x => (ulong)(dynamic)Math.Round(x)).ToArray();
 
@@ -84,6 +92,21 @@ namespace PsqtCompression.CompressionMethods
             // __Extraction__
             // extract the number out of the cramped ulongs
             var extracted = TokenCompression.ExtractAll<ulong>(compressed, origBitSize);
+
+            // __Return the decompressed array__
+            return extracted;
+        }
+    }
+
+    static class PsqtOneLiners
+    {
+        public static ulong[] Decompress(this ulong[] compressed, int origBitSize)
+        {
+            // __Extraction__
+            // extract the number out of the cramped ulongs
+            var extracted = TokenCompression.ExtractAll<ulong>(compressed, origBitSize);
+
+
 
             // __Return the decompressed array__
             return extracted;

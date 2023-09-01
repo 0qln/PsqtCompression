@@ -26,5 +26,9 @@ static class Program
         var decompressed = Psqt.Decompress(compressed, origBitSize);
         Print.Analyze(compressed);
         Print.Analyze(decompressed);
+
+        Console.WriteLine(Print.CopyPasta(compressed.Decompress(origBitSize)));
+
+        Console.WriteLine(origBitSize);
     }
 }
