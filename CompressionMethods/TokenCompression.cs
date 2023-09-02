@@ -85,8 +85,6 @@ namespace PsqtCompression.CompressionMethods
             var result = new ulong[input.Length / dSize + resultExtension];
             T[] group;
 
-            Console.WriteLine(dSize);
-
             for (i = 0; i < result.Length - 1; i++)
             {
                 group = new T[dSize];

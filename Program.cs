@@ -19,16 +19,44 @@ static class Program
 
     public static void Main_(string[] args)
     {
+        int origBitSize;
         var pesto = PsqtCompression.Data.Pesto.ShortTables;
         var minim = PsqtCompression.Data.MinimalChess.ShortTables;
 
-        var compressed = Psqt.Compress(pesto, 4, out int origBitSize);
-        var decompressed = Psqt.Decompress(compressed, origBitSize);
-        Print.Analyze(compressed);
-        Print.Analyze(decompressed);
+        //Print.Analyze(Psqt.Compress(pesto, 3, out origBitSize));
+        //Print.Analyze(Psqt.Compress(pesto, 4, out origBitSize));
 
-        Console.WriteLine(Print.CopyPasta(compressed.Decompress(origBitSize)));
+        var table = pesto;
+        //{
+        //    1, 1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+        //};
 
-        Console.WriteLine(origBitSize);
+        // table.Select((val, idx) => new { val, idx })
+        //var grouped = from x in table.Select((val, idx) => new { val, idx })
+        //              group x.val by x.idx >= table.Length/2;
+
+        short[][] level0 = table
+            .Select((val, idx) => new { val, idx })
+            .GroupBy(x => x.idx / 64, x => x.val)
+            .Select(x => x.ToArray())
+            .ToArray();
+
+        short[][][] level1 = level0
+            .Select((val, idx) => new { val, idx })
+            .GroupBy(x => x.idx / 6, x => x.val)
+            .Select(x => x.ToArray())
+            .ToArray();
+
+        for (int i = 0; i < level1.Length; i++)
+        {
+            for (int j = 0; j < level1[i].Length; j++)
+            {
+                Console.WriteLine(Print.CopyPasta(level1[i][j]));
+            }
+        }
+
+
+
+        return;
     }
 }

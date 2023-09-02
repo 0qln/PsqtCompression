@@ -98,7 +98,7 @@ namespace PsqtCompression.CompressionMethods
         }
     }
 
-    static class PsqtOneLiners
+    public static class Ext
     {
         public static ulong[] Decompress(this ulong[] compressed, int origBitSize)
         {
@@ -106,10 +106,48 @@ namespace PsqtCompression.CompressionMethods
             // extract the number out of the cramped ulongs
             var extracted = TokenCompression.ExtractAll<ulong>(compressed, origBitSize);
 
-
-
             // __Return the decompressed array__
             return extracted;
         }
+    }
+
+    static class PsqtOneLiners
+    {
+        /// <summary>
+        /// Psqt.Compress(pesto, 3, out int origBitSize)
+        /// origBitSize = 8
+        /// </summary>
+        /// <param name="compressed"></param>
+        /// <param name="origBitSize"></param>
+        /// <returns></returns>
+        //public static ulong[] Decompress(this ulong[] compressed)
+        //{
+        //    ulong Extract(ulong u64, int index)
+        //    {
+        //        return (u64 >> index * 8) & 0xFF;
+        //    }
+        //    ulong[] ExtractAll(ulong[] input)
+        //    {
+        //        var result = new ulong[input.Length * 8];
+
+        //        for (int i = 0; i < input.Length; i++)
+        //        {
+        //            for (int j = 0; j < 8; j++)
+        //            {
+        //                result[i * 8 + j] = Extract(input[i], j);
+        //            }
+        //        }
+
+        //        return result;
+        //    }
+
+        //    // __Return the decompressed array__
+        //    return ExtractAll(compressed);
+        //}
+        public static ulong[] Decompress(this ulong[] compressed) => compressed
+            .SelectMany(u64 => Enumerable.Range(0, 8)
+                .Select(index => (u64 >> index * 8) & 0xFF))
+            .ToArray();
+
     }
 }
