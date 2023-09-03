@@ -9,7 +9,7 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace PsqtCompression.CompressionMethods
 {
-    internal static class TokenCompression
+    internal static class UlongTokenCompression
     {
         public static int Sizeof<T>() => Marshal.SizeOf(default(T)) * 8;
 

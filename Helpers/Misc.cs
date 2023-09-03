@@ -46,6 +46,24 @@ namespace PsqtCompression.Helpers
             return count;
         }
 
+        public static string ToBinary(this decimal num)
+        {
+            var bits = Decimal.GetBits(num);
+
+            string result = string.Empty;
+            foreach (var bit in bits)
+            {
+                result += bit.ToBinary();
+            }
+
+            return result;
+        }
+
+        public static string ToBinary(this int num)
+        {
+            return Convert.ToString(num, 2).PadLeft(64, '0');
+        }
+
 
         public static long[] Delta<T1, T2>(T1[] input1, T2[] input2)
         {
@@ -60,6 +78,18 @@ namespace PsqtCompression.Helpers
             }
 
             return result;
+        }
+
+        public static bool Compare<T>(T[] input1, T[] input2)
+            where T : IComparable<T>
+        {
+            if (input1.Length != input2.Length) return false;
+
+            for (int i = 0; i <  input1.Length; i++)
+                for (int j = 0; j < input2.Length; j++)
+                    if (!input1[i].Equals(input2[j])) return false;            
+
+            return true;
         }
 
 

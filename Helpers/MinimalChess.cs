@@ -66,6 +66,40 @@ namespace PsqtCompression.Helpers
 
             return result;
         }
+        public static double[] TransformPesto<TIn>(TIn[] input, dynamic newMin, dynamic newMax, out Func<TIn, double> transform)
+            where TIn : struct, IMinMaxValue<TIn>
+        {
+            double max = (dynamic)input.Max();
+            double min = (dynamic)input.Min();
+
+            var result = new double[input.Length];
+
+            if (newMin < double.MinValue) throw new ArgumentException();
+            if (newMax > double.MaxValue) throw new ArgumentException();
+
+            transform = new Func<TIn, double>(x => Project(x, min, max, newMin, newMax));
+
+            // Iterate pieces
+            for (int i = 0; i < input.Length; i++)
+                // Initialize result 
+                result[i] = transform(input[i]);
+
+
+            return result;
+        }
+        public static double[] TransformPesto<TIn>(TIn[] input, in Func<TIn, double> transform)
+            where TIn : struct, IMinMaxValue<TIn>
+        {
+            var result = new double[input.Length];
+
+            // Iterate pieces
+            for (int i = 0; i < input.Length; i++)
+                // Initialize result 
+                result[i] = transform(input[i]);
+
+
+            return result;
+        }
         public static TOut[] TransformPesto<TIn, TOut>(TIn[] input, dynamic newMin, dynamic newMax)
             where TIn : struct, IMinMaxValue<TIn>
             where TOut : struct, IMinMaxValue<TOut>
@@ -185,7 +219,7 @@ namespace PsqtCompression.Helpers
         /// </param>
         public static int GetFromCompressed(int piece, int square, int mg)
         {
-            return TokenCompression.Extract<byte>(Data.MinimalChess.CompressedUsTablesNorm[piece * 8 + square / 8 + mg * 8], square % 8)
+            return UlongTokenCompression.Extract<byte>(Data.MinimalChess.CompressedUsTablesNorm[piece * 8 + square / 8 + mg * 8], square % 8)
                 - Data.MinimalChess.NotcompressedUsPiecesNorm[mg + piece];
         }
 
