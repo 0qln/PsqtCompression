@@ -1,2 +1,2 @@
 # PsqtCompression
- A collection of different compression methods to try and find a good compression method
+ A collection of different psqt compression methods
